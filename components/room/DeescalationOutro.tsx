@@ -10,7 +10,7 @@ import { motion } from "framer-motion";
 export default function DeescalationOutro({ onDone }: { onDone: () => void }) {
   const [elapsed, setElapsed] = useState(0);
   const TOTAL = 30;
-  const MIN_BEFORE_SKIP = 10;
+  const MIN_BEFORE_SKIP = 5;
 
   useEffect(() => {
     const t = setInterval(() => setElapsed((s) => s + 1), 1000);

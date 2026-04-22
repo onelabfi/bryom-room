@@ -132,7 +132,7 @@ export default function GameShell({ gameId }: Props) {
     // Free the canvas immediately — the outro/state screens cover
     // the whole area and don't need the scene running behind them.
     destroyGame();
-    if (meta.zone === "release") setPhase("outro");
+    if (meta.zone === "release" && sensory.releaseCooldown) setPhase("outro");
     else setPhase("state");
   }
 

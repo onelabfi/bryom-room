@@ -3,8 +3,18 @@
 import { useSensory, type Motion } from "@/lib/sensory";
 
 export default function SensoryPanel({ onClose }: { onClose: () => void }) {
-  const { volume, motion, haptics, warmTint, setVolume, setMotion, setHaptics, setWarm } =
-    useSensory();
+  const {
+    volume,
+    motion,
+    haptics,
+    warmTint,
+    releaseCooldown,
+    setVolume,
+    setMotion,
+    setHaptics,
+    setWarm,
+    setReleaseCooldown,
+  } = useSensory();
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-6">
@@ -64,6 +74,21 @@ export default function SensoryPanel({ onClose }: { onClose: () => void }) {
             {haptics ? "On" : "Off"}
           </button>
         </Row>
+
+        <div className="pt-3 border-t border-white/5 space-y-2">
+          <Row label="Release cooldown">
+            <button
+              onClick={() => setReleaseCooldown(!releaseCooldown)}
+              className={`br-btn text-xs ${releaseCooldown ? "!bg-white/10" : ""}`}
+            >
+              {releaseCooldown ? "On" : "Off"}
+            </button>
+          </Row>
+          <p className="text-[10px] text-[color:var(--fg-dim)] leading-snug">
+            A 30s breathing screen shown after Release games to help the
+            nervous system wind down. Off by choice is fine.
+          </p>
+        </div>
       </div>
     </div>
   );

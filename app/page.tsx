@@ -1,5 +1,5 @@
-import FeelingSelector from "@/components/room/FeelingSelector";
+import Landing from "@/components/room/Landing";
 
 export default function HomePage() {
-  return <FeelingSelector />;
+  return <Landing />;
 }

@@ -61,7 +61,7 @@ export default function ZoneView({ zone }: { zone: Zone }) {
       <header className="flex items-center justify-between pt-1">
         <div className="flex items-center gap-2">
           <button
-            onClick={() => router.push("/")}
+            onClick={() => router.push("/room")}
             className="text-[color:var(--fg-dim)] text-lg"
             aria-label="Back"
           >
