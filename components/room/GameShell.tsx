@@ -188,6 +188,18 @@ async function loadScene(id: string): Promise<any> {
       return (await import("@/games/release/SmashField")).default;
     case "pulse-burst":
       return (await import("@/games/release/PulseBurst")).default;
+    case "breathing-light":
+      return (await import("@/games/calm/BreathingLight")).default;
+    case "flow-lines":
+      return (await import("@/games/calm/FlowLines")).default;
+    case "rain-field":
+      return (await import("@/games/calm/RainField")).default;
+    case "pop-grid":
+      return (await import("@/games/fidget/PopGrid")).default;
+    case "spinner":
+      return (await import("@/games/fidget/Spinner")).default;
+    case "pattern-drawer":
+      return (await import("@/games/fidget/PatternDrawer")).default;
     default:
       throw new Error(`Unknown game: ${id}`);
   }

@@ -64,13 +64,13 @@ export const ZONE_META: Record<
     title: "Calm",
     blurb: "Lower the volume of the nervous system.",
     accent: "var(--accent-calm)",
-    enabled: false,
+    enabled: true,
   },
   fidget: {
     title: "Fidget",
     blurb: "Somewhere for the hands to go.",
     accent: "var(--accent-fidget)",
-    enabled: false,
+    enabled: true,
   },
   release: {
     title: "Release",
@@ -132,6 +132,50 @@ export const GAMES: GameMeta[] = [
     blurb: "Tap the beat. It builds, then winds down.",
     zone: "release",
     durationHintSec: 75,
+  },
+  // Calm
+  {
+    id: "breathing-light",
+    title: "Breathing Light",
+    blurb: "A slow pulse to breathe with.",
+    zone: "calm",
+    durationHintSec: 240,
+  },
+  {
+    id: "flow-lines",
+    title: "Flow Lines",
+    blurb: "Drifting ribbons. Tap to nudge them.",
+    zone: "calm",
+    durationHintSec: 240,
+  },
+  {
+    id: "rain-field",
+    title: "Rain Field",
+    blurb: "Quiet light rain. Tap to ripple.",
+    zone: "calm",
+    durationHintSec: 240,
+  },
+  // Fidget
+  {
+    id: "pop-grid",
+    title: "Pop Grid",
+    blurb: "Bubbles that pop. They come back.",
+    zone: "fidget",
+    durationHintSec: 180,
+  },
+  {
+    id: "spinner",
+    title: "Spinner",
+    blurb: "Flick it. Watch it slow.",
+    zone: "fidget",
+    durationHintSec: 120,
+  },
+  {
+    id: "pattern-drawer",
+    title: "Pattern Drawer",
+    blurb: "Draw. It mirrors four ways.",
+    zone: "fidget",
+    durationHintSec: 180,
   },
 ];
 

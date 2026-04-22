@@ -4,16 +4,18 @@ A regulation room for neurodivergent users — built for the Bryom app.
 
 Users pick **how they feel** (not what they want to play) and are routed to a zone that matches their nervous system state. No failure states, no dark patterns, no ads, no IAP.
 
-## V1 scope
+## Scope
 
-Two zones active. Calm and Fidget stubbed as "Coming soon."
+All four zones active. Three items per zone (12 total).
 
-| Zone    | Games                                         | Purpose                                      |
-| ------- | --------------------------------------------- | -------------------------------------------- |
-| Focus   | Trail Runner · Orb Matcher · Sequence Tap     | Warm up attention without pressure           |
-| Release | Troll Blaster · Smash Field · Pulse Burst     | Move pressure out, with automatic cooldown   |
+| Zone    | Items                                              | Purpose                                      |
+| ------- | -------------------------------------------------- | -------------------------------------------- |
+| Focus   | Trail Runner · Orb Matcher · Sequence Tap          | Warm up attention without pressure           |
+| Calm    | Breathing Light · Flow Lines · Rain Field          | Lower nervous-system volume                  |
+| Fidget  | Pop Grid · Spinner · Pattern Drawer                | Somewhere for the hands to go                |
+| Release | Troll Blaster · Smash Field · Pulse Burst          | Move pressure out, with automatic cooldown   |
 
-Release games are followed by a **mandatory 30s de-escalation outro** (breathing light) before returning to the zone.
+Release games are followed by a **mandatory 30s de-escalation outro** (breathing light) before returning to the zone. Calm and Fidget have no duration cap — users stay as long as they want.
 
 ## State-based entry
 
@@ -154,8 +156,9 @@ lib/
 
 ## Roadmap
 
-- [ ] Calm zone (5 experiences: Breathing Light, Flow Lines, Color Drift, Rain Field, Floating Objects)
-- [ ] Fidget zone (Pop Grid, Spinner, Stretch & Snap, Tap Storm, Pattern Drawer)
+- [x] Focus + Release zones (Phase 0)
+- [x] Calm + Fidget zones (Phase 1) — 3 items each
+- [ ] Fill out to 5 items per zone (original design: 20 total)
 - [ ] Replace placeholder reindeer with Bryom sprite pack
 - [ ] Wire analytics handler to Bryom's existing pipeline
 - [ ] PWA manifest + iOS standalone support
