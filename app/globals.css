@@ -1,26 +1,79 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: #0b0f14;
+  --bg-soft: #121821;
+  --fg: #e9edf2;
+  --fg-dim: #8a96a6;
+  --accent-focus: #7bd389;
+  --accent-calm: #5fa8d3;
+  --accent-fidget: #b48ce0;
+  --accent-release: #e07a7a;
+  --ring: rgba(255, 255, 255, 0.08);
+  --warm: 0;
+  --motion: 1;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-background: var(--bg);
+  --color-foreground: var(--fg);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html,
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+  overscroll-behavior: none;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
+html,
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: rgba(255, 170, 80, var(--warm));
+  mix-blend-mode: multiply;
+  z-index: 9999;
+  transition: background 0.3s ease;
+}
+
+.br-card {
+  background: var(--bg-soft);
+  border: 1px solid var(--ring);
+  border-radius: 20px;
+}
+
+.br-btn {
+  background: var(--bg-soft);
+  border: 1px solid var(--ring);
+  border-radius: 14px;
+  padding: 12px 18px;
+  color: var(--fg);
+  font-weight: 500;
+  transition: transform 0.12s ease, background 0.2s ease;
+}
+.br-btn:active {
+  transform: scale(0.97);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion: 0;
+  }
 }
