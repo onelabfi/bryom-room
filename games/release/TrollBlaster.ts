@@ -8,6 +8,10 @@ import { dimText, endScene } from "../shared";
  * trolls sit in the upper half and DISSOLVE (not explode) on impact.
  * 90s session, then shell-driven de-escalation outro.
  */
+const MAX_PULL = 200;
+const VEL_MULT = 6;
+const GRAVITY = 500;
+
 export default class TrollBlaster extends Phaser.Scene {
   private anchor!: Phaser.Math.Vector2;
   private orb!: Phaser.GameObjects.Arc;
@@ -18,6 +22,7 @@ export default class TrollBlaster extends Phaser.Scene {
   private readonly duration = 90_000;
   private elapsed = 0;
   private trail: Phaser.GameObjects.Graphics | null = null;
+  private band: Phaser.GameObjects.Graphics | null = null;
 
   constructor() {
     super({ key: "TrollBlaster" });
@@ -34,20 +39,20 @@ export default class TrollBlaster extends Phaser.Scene {
     this.spawnOrb();
     this.spawnTrolls();
 
+    // Generous pickup zone — anywhere on the lower half works so users
+    // don't have to precisely grab the tiny orb.
     this.input.on("pointerdown", (p: Phaser.Input.Pointer) => {
-      if (Phaser.Math.Distance.Between(p.x, p.y, this.orb.x, this.orb.y) < 60) {
-        this.aiming = true;
-      }
+      if (p.y > height * 0.5) this.aiming = true;
     });
     this.input.on("pointermove", (p: Phaser.Input.Pointer) => {
       if (!this.aiming) return;
       const dx = p.x - this.anchor.x;
       const dy = p.y - this.anchor.y;
-      const len = Math.min(140, Math.hypot(dx, dy));
+      const len = Math.min(MAX_PULL, Math.hypot(dx, dy));
       const ang = Math.atan2(dy, dx);
       this.orb.x = this.anchor.x + Math.cos(ang) * len;
       this.orb.y = this.anchor.y + Math.sin(ang) * len;
-      this.drawTrajectory();
+      this.drawAim();
     });
     this.input.on("pointerup", () => {
       if (!this.aiming) return;
@@ -55,7 +60,7 @@ export default class TrollBlaster extends Phaser.Scene {
       this.launch();
     });
 
-    this.hud = dimText(this, width / 2, 24, "Drag the orb down. Release to throw up.");
+    this.hud = dimText(this, width / 2, 24, "Drag down, release to throw. Pull harder for more power.");
 
     this.time.delayedCall(this.duration, () => endScene(this, "finished"));
   }
@@ -68,21 +73,43 @@ export default class TrollBlaster extends Phaser.Scene {
     body.setCircle(14).setAllowGravity(false);
   }
 
-  private drawTrajectory() {
+  private drawAim() {
+    // rubber band
+    this.band?.destroy();
+    this.band = this.add.graphics();
+    const pullLen = Phaser.Math.Distance.Between(
+      this.orb.x,
+      this.orb.y,
+      this.anchor.x,
+      this.anchor.y,
+    );
+    const strength = Math.min(1, pullLen / MAX_PULL);
+    const bandColor = Phaser.Display.Color.Interpolate.ColorWithColor(
+      Phaser.Display.Color.ValueToColor(0xffe28a),
+      Phaser.Display.Color.ValueToColor(0xff6b6b),
+      1,
+      strength,
+    );
+    const rgb = Phaser.Display.Color.GetColor(bandColor.r, bandColor.g, bandColor.b);
+    this.band.lineStyle(3 + strength * 3, rgb, 0.7 + strength * 0.3);
+    this.band.beginPath();
+    this.band.moveTo(this.anchor.x, this.anchor.y);
+    this.band.lineTo(this.orb.x, this.orb.y);
+    this.band.strokePath();
+
+    // trajectory preview
     this.trail?.destroy();
     this.trail = this.add.graphics();
-    this.trail.lineStyle(2, 0xffe28a, 0.35);
+    this.trail.lineStyle(2, rgb, 0.4);
     const dx = this.anchor.x - this.orb.x;
     const dy = this.anchor.y - this.orb.y;
-    const vx = dx * 4, vy = dy * 4;
-    let px = this.orb.x, py = this.orb.y;
+    const vx = dx * VEL_MULT, vy = dy * VEL_MULT;
     this.trail.beginPath();
-    this.trail.moveTo(px, py);
-    for (let t = 0.02; t < 1.4; t += 0.04) {
+    this.trail.moveTo(this.orb.x, this.orb.y);
+    for (let t = 0.02; t < 1.6; t += 0.04) {
       const nx = this.orb.x + vx * t;
-      const ny = this.orb.y + vy * t + 0.5 * 600 * t * t;
+      const ny = this.orb.y + vy * t + 0.5 * GRAVITY * t * t;
       this.trail.lineTo(nx, ny);
-      px = nx; py = ny;
     }
     this.trail.strokePath();
   }
@@ -90,10 +117,12 @@ export default class TrollBlaster extends Phaser.Scene {
   private launch() {
     this.trail?.destroy();
     this.trail = null;
+    this.band?.destroy();
+    this.band = null;
     const dx = this.anchor.x - this.orb.x;
     const dy = this.anchor.y - this.orb.y;
     const body = this.orb.body as Phaser.Physics.Arcade.Body;
-    body.setAllowGravity(true).setGravityY(600).setVelocity(dx * 4, dy * 4);
+    body.setAllowGravity(true).setGravityY(GRAVITY).setVelocity(dx * VEL_MULT, dy * VEL_MULT);
     const launched = this.orb;
     this.time.delayedCall(3200, () => {
       if (launched.active) {
