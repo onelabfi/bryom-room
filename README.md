@@ -89,9 +89,15 @@ Just point an iframe or WebView at `https://bryom-room.vercel.app/`. Pass user c
 ### 3. Component mount (future)
 Extract into a `@onelabfi/bryom-room` npm package. Not built yet — do this only if multiple apps need to embed.
 
+## Orientation
+
+- **Entry ("How are you feeling?") is portrait** — that's how users hold a phone when they open an app.
+- **Zones and games are landscape** — more room for the play field.
+- Portrait warning only shows on landscape routes. Entry never nags.
+- On desktop browsers (≥900px), everything renders inside a phone-shaped preview frame so the room can be reviewed on a laptop.
+
 ## Sensory guarantees
 
-- **Landscape only.** Portrait shows a rotate prompt.
 - **No failure states.** Soft fades and mascot reactions only.
 - **Motion cap** (low/medium/high) scales game speeds.
 - **Warm tint** overlay for light sensitivity.
@@ -100,10 +106,19 @@ Extract into a `@onelabfi/bryom-room` npm package. Not built yet — do this onl
 - **No flashing > 3Hz.**
 - **Phaser audio is muted by default** until user interaction (Web Audio).
 
-## Placeholder assets
+## Skin — everything is swappable
 
-The reindeer in `components/room/Mascot.tsx` is a hand-drawn SVG placeholder.
-Replace with Bryom's sprite pack — the component accepts `size` and `mood` props (`idle | happy | sleepy | cheer`).
+This repo ships with **placeholder graphics** so the room works end-to-end before Bryom's art lands. Every visual is designed to be replaced with the Bryom skin:
+
+| Element               | Where to swap                                                   |
+| --------------------- | --------------------------------------------------------------- |
+| Reindeer mascot       | `components/room/Mascot.tsx` — swap the SVG for sprite art      |
+| Game sprites          | `games/focus/*` and `games/release/*` — replace `scene.add.circle/rectangle` calls with loaded textures |
+| Zone accent colors    | `lib/state.ts` → `ZONE_META[zone].accent`                       |
+| Background / tokens   | `app/globals.css` → `--bg`, `--bg-soft`, `--accent-*`           |
+| Phone-frame preview   | `components/room/PhoneFrame.tsx` — desktop-only, drops out on phones |
+
+Mascot API: `<Mascot size={number} mood="idle | happy | sleepy | cheer" />`.
 
 ## Project structure
 

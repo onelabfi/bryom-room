@@ -3,9 +3,23 @@
 import { motion } from "framer-motion";
 
 /**
- * Placeholder reindeer mascot. SVG will be replaced with the Bryom
- * sprite pack when Alex provides it. Shape is deliberately friendly
- * and mammalian — small body, large head, antlers, soft colors.
+ * ⚠ PLACEHOLDER — REPLACE WITH BRYOM SKIN.
+ *
+ * This SVG reindeer exists only so the room works end-to-end before
+ * Bryom's official art arrives. Every graphic in the room is meant to
+ * be swapped for the Bryom visual system (mascot, zone colors, icons,
+ * game sprites). To swap the mascot:
+ *
+ *   1. Drop the Bryom reindeer sprite pack into `/public/assets/reindeer/`.
+ *   2. Replace the SVG below with an <Image> (or <img>) pointing at the
+ *      sprite for the requested `mood` prop.
+ *   3. Keep the `size` and `mood` props — callers depend on them.
+ *
+ * Other graphics to swap when the skin arrives:
+ *   - Game sprites in `games/focus/*` and `games/release/*`
+ *     (currently primitive shapes via scene.add.circle/rectangle).
+ *   - Zone accent colors in `lib/state.ts` (ZONE_META[zone].accent).
+ *   - Background tokens in `app/globals.css` (--bg, --bg-soft, --accent-*).
  */
 export default function Mascot({
   size = 120,

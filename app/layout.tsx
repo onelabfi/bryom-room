@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import RotatePrompt from "@/components/room/RotatePrompt";
 import SensoryBoot from "@/components/room/SensoryBoot";
+import PhoneFrame from "@/components/room/PhoneFrame";
 
 export const metadata: Metadata = {
   title: "Bryom Room",
@@ -24,9 +25,7 @@ export default function RootLayout({
     <html lang="en" className="h-full antialiased">
       <body className="w-full h-full overflow-hidden">
         <SensoryBoot />
-        <div className="fixed inset-0 flex items-center justify-center">
-          {children}
-        </div>
+        <PhoneFrame>{children}</PhoneFrame>
         <RotatePrompt />
       </body>
     </html>
