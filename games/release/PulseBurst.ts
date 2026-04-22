@@ -33,7 +33,7 @@ export default class PulseBurst extends Phaser.Scene {
     this.ring = this.add.circle(cx, cy, 10, 0xffe28a, 0);
     this.ring.setStrokeStyle(3, 0xffe28a, 0.9);
 
-    dimText(this, width / 2, 30, "Tap when the ring touches the circle.");
+    dimText(this, width / 2, 52, "Tap when the ring touches the circle.");
     this.hud = dimText(this, width / 2, height - 28, "♪ 0");
 
     this.input.on("pointerdown", () => this.tap());

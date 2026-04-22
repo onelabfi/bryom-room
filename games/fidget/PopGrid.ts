@@ -53,7 +53,7 @@ export default class PopGrid extends Phaser.Scene {
       }
     }
 
-    dimText(this, width / 2, 22, "Pop them. They come back.");
+    dimText(this, width / 2, 52, "Pop them. They come back.");
 
     const done = softText(this, width - 52, 22, "Done", 14).setInteractive({
       useHandCursor: true,

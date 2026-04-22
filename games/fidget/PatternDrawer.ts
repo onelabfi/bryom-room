@@ -65,7 +65,7 @@ export default class PatternDrawer extends Phaser.Scene {
       this.current = null;
     });
 
-    dimText(this, width / 2, 22, "Draw. It echoes.");
+    dimText(this, width / 2, 52, "Draw. It echoes.");
 
     const clear = softText(this, 52, 22, "Clear", 14).setInteractive({
       useHandCursor: true,

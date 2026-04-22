@@ -35,7 +35,7 @@ export default class FlowLines extends Phaser.Scene {
     const { width, height } = this.scale;
     this.cameras.main.setBackgroundColor("#06090d");
 
-    dimText(this, width / 2, 24, "Touch anywhere to nudge the flow.");
+    dimText(this, width / 2, 52, "Touch anywhere to nudge the flow.");
 
     const palette = [0x5fa8d3, 0x7bd389, 0xb48ce0, 0xffe28a, 0x8ac8e0];
     for (let i = 0; i < 6; i++) {

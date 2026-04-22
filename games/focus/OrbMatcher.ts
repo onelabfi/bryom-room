@@ -37,7 +37,7 @@ export default class OrbMatcher extends Phaser.Scene {
 
     this.cameras.main.setBackgroundColor("#0b0f14");
 
-    dimText(this, width / 2, 24, "Swap adjacent orbs. Match 3 or more.");
+    dimText(this, width / 2, 52, "Swap adjacent orbs. Match 3 or more.");
 
     for (let r = 0; r < ROWS; r++) {
       this.grid[r] = [];

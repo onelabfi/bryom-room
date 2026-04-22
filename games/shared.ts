@@ -36,7 +36,7 @@ export function dimText(
   x: number,
   y: number,
   text: string,
-  size = 12,
+  size = 14,
 ) {
   return scene.add
     .text(x, y, text, {

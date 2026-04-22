@@ -60,7 +60,8 @@ export default class TrollBlaster extends Phaser.Scene {
       this.launch();
     });
 
-    this.hud = dimText(this, width / 2, 24, "Drag down, release to throw. Pull harder for more power.");
+    dimText(this, width / 2, 52, "Drag down, release to throw. Pull harder.");
+    this.hud = dimText(this, width / 2, height - 24, "");
 
     this.time.delayedCall(this.duration, () => endScene(this, "finished"));
   }

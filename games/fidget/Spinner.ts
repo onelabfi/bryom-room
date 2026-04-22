@@ -74,7 +74,7 @@ export default class Spinner extends Phaser.Scene {
       this.dragging = false;
     });
 
-    dimText(this, width / 2, 22, "Flick the arms. Tap the hub to stop.");
+    dimText(this, width / 2, 52, "Flick the arms. Tap the hub to stop.");
 
     const done = softText(this, width - 52, 22, "Done", 14).setInteractive({
       useHandCursor: true,

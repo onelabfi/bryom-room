@@ -22,7 +22,7 @@ export default class SmashField extends Phaser.Scene {
     const { width, height } = this.scale;
     this.cameras.main.setBackgroundColor("#0b0f14");
 
-    dimText(this, width / 2, 24, "Drag across the shards. 90 second cap.");
+    dimText(this, width / 2, 52, "Drag across the shards. 90 second cap.");
 
     for (let i = 0; i < 18; i++) this.spawnShard();
 

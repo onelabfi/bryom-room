@@ -47,7 +47,7 @@ export default class RainField extends Phaser.Scene {
       this.spawnRipple(p.x, p.y);
     });
 
-    dimText(this, width / 2, 24, "Quiet rain. Tap anywhere.");
+    dimText(this, width / 2, 52, "Quiet rain. Tap anywhere.");
 
     const done = softText(this, width - 52, 24, "Done", 14).setInteractive({
       useHandCursor: true,

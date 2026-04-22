@@ -33,7 +33,7 @@ export default class BreathingLight extends Phaser.Scene {
 
     this.cue = softText(this, cx, cy + 140, "In", 22);
 
-    dimText(this, cx, 24, "Breathe with the light. Tap Done when ready.");
+    dimText(this, cx, 52, "Breathe with the light. Tap Done when ready.");
 
     const done = softText(this, width - 52, 24, "Done", 14).setInteractive({
       useHandCursor: true,
