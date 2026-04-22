@@ -94,9 +94,15 @@ export default class TrollBlaster extends Phaser.Scene {
     const dy = this.anchor.y - this.orb.y;
     const body = this.orb.body as Phaser.Physics.Arcade.Body;
     body.setAllowGravity(true).setGravityY(600).setVelocity(dx * 4, dy * 4);
+    // Capture the current orb — if it gets destroyed early by going
+    // off-screen in update(), the fallback timer must NOT destroy the
+    // new orb that replaced it.
+    const launched = this.orb;
     this.time.delayedCall(3200, () => {
-      this.orb.destroy();
-      this.spawnOrb();
+      if (launched.active) {
+        launched.destroy();
+        this.spawnOrb();
+      }
     });
   }
 

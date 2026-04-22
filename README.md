@@ -51,6 +51,25 @@ setAnalyticsHandler((e) => {
 });
 ```
 
+## Playtest
+
+See **[PLAYTEST.md](./PLAYTEST.md)** for the tester brief.
+
+### Wiring the feedback webhook
+
+In-app feedback (floating "FEEDBACK" pill + post-game "Report something" link) posts to `/api/feedback`. That endpoint forwards to whatever URL you set in the env var `FEEDBACK_WEBHOOK_URL`.
+
+- **Discord** — paste a channel webhook URL. The endpoint sends a `content` field, which Discord renders as-is.
+- **Zapier / Make / n8n** — any webhook trigger works. The POST body is JSON with `{ text, context, meta }`.
+- **Unset** — feedback returns ok but is not forwarded. Server logs it in dev.
+
+Set the env in Vercel:
+```bash
+vercel env add FEEDBACK_WEBHOOK_URL production
+# paste your webhook URL
+vercel deploy --prod
+```
+
 ## Tech
 
 - Next.js 16 (App Router, Turbopack)

@@ -22,7 +22,6 @@ export default class OrbMatcher extends Phaser.Scene {
   private cellSize = 56;
   private cleared = 0;
   private hud!: Phaser.GameObjects.Text;
-  private elapsed = 0;
 
   constructor() {
     super({ key: "OrbMatcher" });
@@ -178,7 +177,4 @@ export default class OrbMatcher extends Phaser.Scene {
     return true;
   }
 
-  update(_t: number, dt: number) {
-    this.elapsed += dt;
-  }
 }

@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Mascot from "./Mascot";
 import SensoryPanel from "./SensoryPanel";
+import FeedbackButton from "./FeedbackButton";
 import { ZONE_META, gamesForZone } from "@/lib/state";
 import type { Zone } from "@/lib/analytics";
 import { track, now } from "@/lib/analytics";
@@ -38,7 +39,7 @@ export default function ZoneView({ zone }: { zone: Zone }) {
   const recommended = from?.startsWith("feel:");
 
   return (
-    <div className="w-full h-full flex flex-col p-5 gap-4">
+    <div className="relative w-full h-full flex flex-col p-5 gap-4">
       <header className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button
@@ -107,6 +108,8 @@ export default function ZoneView({ zone }: { zone: Zone }) {
       </div>
 
       {showSettings && <SensoryPanel onClose={() => setShowSettings(false)} />}
+
+      <FeedbackButton context={{ screen: `zone/${zone}`, zone }} />
     </div>
   );
 }

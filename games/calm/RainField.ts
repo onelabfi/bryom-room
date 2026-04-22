@@ -56,7 +56,7 @@ export default class RainField extends Phaser.Scene {
   }
 
   private spawnDrop(y?: number) {
-    const { width, height } = this.scale;
+    const { width } = this.scale;
     const color = Phaser.Utils.Array.GetRandom(this.palette);
     const r = Phaser.Math.FloatBetween(1.5, 3.5);
     const graphic = this.add.circle(
@@ -80,7 +80,6 @@ export default class RainField extends Phaser.Scene {
       const removed = this.drops.shift();
       removed?.graphic.destroy();
     }
-    void height;
   }
 
   private spawnRipple(x: number, y: number) {

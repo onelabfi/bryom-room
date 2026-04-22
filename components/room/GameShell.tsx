@@ -16,7 +16,14 @@ interface Props {
 
 /**
  * Boots a Phaser game in a canvas, owns lifecycle (start/end/cleanup),
- * and surfaces pause / settings / exit controls.
+ * and surfaces settings / exit controls.
+ *
+ * Lifecycle rules:
+ *   - endGame() is idempotent (guarded by endedRef).
+ *   - When endGame fires, the Phaser game is destroyed immediately. No
+ *     need to keep it running behind the outro/state overlays.
+ *   - Page backgrounded → scene pauses (Release timers must not drift
+ *     while the tab is hidden).
  */
 export default function GameShell({ gameId }: Props) {
   const router = useRouter();
@@ -26,7 +33,6 @@ export default function GameShell({ gameId }: Props) {
   const gameRef = useRef<Phaser.Game | null>(null);
   const startedAtRef = useRef<number>(0);
   const endedRef = useRef(false);
-  const [paused, setPaused] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [phase, setPhase] = useState<"playing" | "outro" | "state" | "done">("playing");
   const sensory = useSensory();
@@ -81,16 +87,35 @@ export default function GameShell({ gameId }: Props) {
       });
     })();
 
+    // Pause/resume on tab visibility change. Regulation-critical for
+    // Release games: the 90s timer must not expire while the app is
+    // backgrounded.
+    const onVis = () => {
+      const g = gameRef.current;
+      if (!g) return;
+      const scenes = g.scene.getScenes(true);
+      if (document.hidden) scenes.forEach((s) => s.scene.pause());
+      else scenes.forEach((s) => s.scene.resume());
+    };
+    document.addEventListener("visibilitychange", onVis);
+
     return () => {
       disposed = true;
-      if (!endedRef.current) {
-        endGame("exited");
-      }
-      gameRef.current?.destroy(true);
-      gameRef.current = null;
+      document.removeEventListener("visibilitychange", onVis);
+      if (!endedRef.current) endGame("exited");
+      destroyGame();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameId]);
+
+  function destroyGame() {
+    try {
+      gameRef.current?.destroy(true);
+    } catch {
+      // Phaser occasionally throws during teardown — swallow.
+    }
+    gameRef.current = null;
+  }
 
   function endGame(reason: "finished" | "exited" | "timeout") {
     if (endedRef.current || !meta) return;
@@ -104,11 +129,11 @@ export default function GameShell({ gameId }: Props) {
       completed: reason === "finished",
       reason,
     });
-    if (meta.zone === "release") {
-      setPhase("outro");
-    } else {
-      setPhase("state");
-    }
+    // Free the canvas immediately — the outro/state screens cover
+    // the whole area and don't need the scene running behind them.
+    destroyGame();
+    if (meta.zone === "release") setPhase("outro");
+    else setPhase("state");
   }
 
   function onStateAfter(feeling: Feeling) {
@@ -166,9 +191,13 @@ export default function GameShell({ gameId }: Props) {
 
       {phase === "outro" && <DeescalationOutro onDone={onOutroDone} />}
 
-      {phase === "state" && <StateAfter onPick={onStateAfter} />}
-
-      {paused && <div className="absolute inset-0 bg-black/40" onClick={() => setPaused(false)} />}
+      {phase === "state" && (
+        <StateAfter
+          onPick={onStateAfter}
+          zone={meta.zone}
+          game={meta.id}
+        />
+      )}
     </div>
   );
 }

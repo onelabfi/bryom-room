@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Mascot from "./Mascot";
+import FeedbackButton from "./FeedbackButton";
 import { FEELINGS, ZONE_META } from "@/lib/state";
 import { track, now, type Feeling } from "@/lib/analytics";
 
@@ -36,7 +37,10 @@ export default function FeelingSelector() {
   };
 
   return (
-    <div className="w-full h-full flex flex-col items-center px-5 pt-8 pb-6 gap-4 overflow-y-auto">
+    <div className="relative w-full h-full flex flex-col items-center px-5 pt-8 pb-6 gap-4 overflow-y-auto">
+      <div className="absolute top-2 left-1/2 -translate-x-1/2 text-[9px] uppercase tracking-[0.2em] text-[color:var(--fg-dim)]">
+        Playtest build
+      </div>
       <div className="flex flex-col items-center gap-2 text-center">
         <Mascot size={100} mood="idle" />
         <h1 className="text-2xl font-medium leading-tight mt-1">
@@ -85,6 +89,8 @@ export default function FeelingSelector() {
       >
         Skip — let me pick a zone myself
       </button>
+
+      <FeedbackButton context={{ screen: "entry" }} />
     </div>
   );
 }

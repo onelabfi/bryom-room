@@ -1,10 +1,22 @@
 "use client";
 
+import { useState } from "react";
 import { FEELINGS } from "@/lib/state";
-import type { Feeling } from "@/lib/analytics";
+import type { Feeling, Zone } from "@/lib/analytics";
 import Mascot from "./Mascot";
+import FeedbackModal from "./FeedbackModal";
 
-export default function StateAfter({ onPick }: { onPick: (f: Feeling) => void }) {
+export default function StateAfter({
+  onPick,
+  zone,
+  game,
+}: {
+  onPick: (f: Feeling) => void;
+  zone: Zone;
+  game: string;
+}) {
+  const [showFeedback, setShowFeedback] = useState(false);
+
   return (
     <div className="absolute inset-0 bg-[color:var(--bg)]/95 flex items-center justify-center p-6">
       <div className="w-full max-w-xl space-y-4 text-center">
@@ -26,13 +38,27 @@ export default function StateAfter({ onPick }: { onPick: (f: Feeling) => void })
             </button>
           ))}
         </div>
-        <button
-          onClick={() => onPick("ok")}
-          className="text-xs text-[color:var(--fg-dim)] underline underline-offset-4"
-        >
-          Skip
-        </button>
+        <div className="flex items-center justify-center gap-4 pt-1">
+          <button
+            onClick={() => onPick("ok")}
+            className="text-xs text-[color:var(--fg-dim)] underline underline-offset-4"
+          >
+            Skip
+          </button>
+          <button
+            onClick={() => setShowFeedback(true)}
+            className="text-xs text-[color:var(--fg-dim)] underline underline-offset-4"
+          >
+            Report something
+          </button>
+        </div>
       </div>
+      {showFeedback && (
+        <FeedbackModal
+          context={{ screen: `play/${game}`, zone, game }}
+          onClose={() => setShowFeedback(false)}
+        />
+      )}
     </div>
   );
 }
