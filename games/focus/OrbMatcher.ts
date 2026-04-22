@@ -3,25 +3,32 @@ import { dimText, endScene, softText } from "../shared";
 
 /**
  * Orb Matcher — Focus zone.
- * 6x6 grid of colored orbs. Tap one, tap an adjacent one to swap.
- * Matches of 3+ dissolve. No timer, no score pressure.
- * Session ends when user hits "done" button (soft complete at 180s).
+ * 6x6 grid of colored orbs. Touch an orb and SWIPE in any direction to
+ * swap with the adjacent orb. If the swap doesn't form a match of 3+,
+ * the orbs swap back. No timer, no score pressure. Soft auto-end at 180s.
  */
 
 const COLORS = [0x7bd389, 0x5fa8d3, 0xb48ce0, 0xe0c27a, 0xe07a7a];
 const COLS = 6;
 const ROWS = 6;
+const SWIPE_THRESHOLD = 14; // px before a drag counts as a swipe
 
 type Cell = { orb: Phaser.GameObjects.Arc; color: number; row: number; col: number };
 
 export default class OrbMatcher extends Phaser.Scene {
   private grid: (Cell | null)[][] = [];
-  private selected: Cell | null = null;
   private boardX = 0;
   private boardY = 0;
   private cellSize = 56;
   private cleared = 0;
   private hud!: Phaser.GameObjects.Text;
+  private busy = false;
+  private dragStart: {
+    cell: Cell;
+    startX: number;
+    startY: number;
+    consumed: boolean;
+  } | null = null;
 
   constructor() {
     super({ key: "OrbMatcher" });
@@ -37,7 +44,7 @@ export default class OrbMatcher extends Phaser.Scene {
 
     this.cameras.main.setBackgroundColor("#0b0f14");
 
-    dimText(this, width / 2, 52, "Swap adjacent orbs. Match 3 or more.");
+    dimText(this, width / 2, 52, "Touch an orb and swipe to swap.");
 
     for (let r = 0; r < ROWS; r++) {
       this.grid[r] = [];
@@ -59,6 +66,15 @@ export default class OrbMatcher extends Phaser.Scene {
 
     // soft auto-complete at 180s
     this.time.delayedCall(180_000, () => endScene(this, "finished"));
+
+    // global swipe handlers
+    this.input.on("pointermove", (p: Phaser.Input.Pointer) => this.onMove(p));
+    this.input.on("pointerup", () => {
+      this.dragStart = null;
+    });
+    this.input.on("pointerupoutside", () => {
+      this.dragStart = null;
+    });
   }
 
   private makeOrb(row: number, col: number): Cell {
@@ -67,35 +83,65 @@ export default class OrbMatcher extends Phaser.Scene {
     const y = this.boardY + row * this.cellSize;
     const orb = this.add.circle(x, y, this.cellSize * 0.38, color);
     orb.setInteractive({ useHandCursor: true });
-    orb.on("pointerdown", () => this.tap(row, col));
-    return { orb, color, row, col };
+    const cell: Cell = { orb, color, row, col };
+    orb.on("pointerdown", (p: Phaser.Input.Pointer) => {
+      if (this.busy) return;
+      this.dragStart = { cell, startX: p.x, startY: p.y, consumed: false };
+      orb.setStrokeStyle(2, 0xffffff, 0.5);
+      this.time.delayedCall(220, () => orb.setStrokeStyle());
+    });
+    return cell;
   }
 
-  private tap(row: number, col: number) {
-    const cell = this.grid[row][col];
-    if (!cell) return;
-    if (!this.selected) {
-      this.selected = cell;
-      cell.orb.setStrokeStyle(3, 0xffffff, 0.8);
+  private onMove(p: Phaser.Input.Pointer) {
+    if (!p.isDown || !this.dragStart || this.dragStart.consumed) return;
+    const dx = p.x - this.dragStart.startX;
+    const dy = p.y - this.dragStart.startY;
+    if (Math.max(Math.abs(dx), Math.abs(dy)) < SWIPE_THRESHOLD) return;
+
+    let dr = 0;
+    let dc = 0;
+    if (Math.abs(dx) > Math.abs(dy)) dc = dx > 0 ? 1 : -1;
+    else dr = dy > 0 ? 1 : -1;
+
+    const fromCell = this.dragStart.cell;
+    this.dragStart.consumed = true;
+    this.dragStart = null;
+
+    const targetRow = fromCell.row + dr;
+    const targetCol = fromCell.col + dc;
+    if (
+      targetRow < 0 ||
+      targetRow >= ROWS ||
+      targetCol < 0 ||
+      targetCol >= COLS
+    )
       return;
-    }
-    const sel = this.selected;
-    sel.orb.setStrokeStyle();
 
-    const adjacent =
-      (Math.abs(sel.row - row) === 1 && sel.col === col) ||
-      (Math.abs(sel.col - col) === 1 && sel.row === row);
+    const targetCell = this.grid[targetRow][targetCol];
+    if (!targetCell) return;
 
-    if (!adjacent || (sel.row === row && sel.col === col)) {
-      this.selected = null;
-      return;
-    }
+    this.attemptSwap(fromCell, targetCell);
+  }
 
-    this.swap(sel, cell);
-    this.selected = null;
-    this.time.delayedCall(180, () => {
+  private attemptSwap(a: Cell, b: Cell) {
+    this.busy = true;
+    this.swap(a, b);
+    this.time.delayedCall(200, () => {
       const matched = this.resolveMatches(false);
-      if (!matched) this.swap(sel, cell); // swap back if no match
+      if (!matched) {
+        // soft "nope" — swap back
+        this.swap(a, b);
+        this.time.delayedCall(200, () => {
+          this.busy = false;
+        });
+      } else {
+        // resolveMatches schedules its own follow-up; release lock
+        // a bit later so cascades complete first.
+        this.time.delayedCall(600, () => {
+          this.busy = false;
+        });
+      }
     });
   }
 
@@ -176,5 +222,4 @@ export default class OrbMatcher extends Phaser.Scene {
     });
     return true;
   }
-
 }
