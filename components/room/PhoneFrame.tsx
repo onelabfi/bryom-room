@@ -1,20 +1,15 @@
 "use client";
 
-import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { isLandscapePath } from "@/lib/layout";
 
 /**
- * On desktop browsers (>= 900px wide) wraps the app in a phone-shaped
- * preview frame so the room can be reviewed on a laptop. On real phones,
- * renders children full-screen.
+ * On desktop browsers (>= 900px wide) wraps the app in a portrait phone
+ * frame so the room can be reviewed on a laptop. On real phones, renders
+ * children full-screen.
  *
- * Orientation follows the route:
- *   "/"       → portrait (entry)
- *   "/room/*" → landscape (zones + games)
+ * The room is portrait everywhere — no rotation, one-handed thumb-reach.
  */
 export default function PhoneFrame({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname() ?? "/";
   const [isDesktop, setIsDesktop] = useState(false);
 
   useEffect(() => {
@@ -24,8 +19,6 @@ export default function PhoneFrame({ children }: { children: React.ReactNode }) 
     return () => window.removeEventListener("resize", check);
   }, []);
 
-  const landscape = isLandscapePath(pathname);
-
   if (!isDesktop) {
     return (
       <div className="fixed inset-0 flex items-center justify-center">
@@ -34,8 +27,8 @@ export default function PhoneFrame({ children }: { children: React.ReactNode }) 
     );
   }
 
-  const w = landscape ? 760 : 380;
-  const h = landscape ? 380 : 760;
+  const w = 380;
+  const h = 760;
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-[linear-gradient(135deg,#111418_0%,#05070a_100%)]">
@@ -46,17 +39,18 @@ export default function PhoneFrame({ children }: { children: React.ReactNode }) 
           height: h + 24,
           borderRadius: 52,
           padding: 12,
-          transition: "width 0.55s cubic-bezier(.5,.1,.3,1), height 0.55s cubic-bezier(.5,.1,.3,1)",
         }}
       >
-        {/* dynamic island / notch */}
+        {/* dynamic island */}
         <div
           className="absolute bg-black rounded-full z-20"
-          style={
-            landscape
-              ? { top: "50%", transform: "translateY(-50%)", left: 20, width: 6, height: 90 }
-              : { top: 18, left: "50%", transform: "translateX(-50%)", width: 90, height: 6 }
-          }
+          style={{
+            top: 18,
+            left: "50%",
+            transform: "translateX(-50%)",
+            width: 90,
+            height: 6,
+          }}
         />
         {/* screen */}
         <div
@@ -68,23 +62,15 @@ export default function PhoneFrame({ children }: { children: React.ReactNode }) 
         {/* side buttons */}
         <div
           className="absolute bg-[#1c1f24] rounded-sm"
-          style={
-            landscape
-              ? { top: -4, left: 140, width: 60, height: 4 }
-              : { left: -4, top: 140, width: 4, height: 60 }
-          }
+          style={{ left: -4, top: 140, width: 4, height: 60 }}
         />
         <div
           className="absolute bg-[#1c1f24] rounded-sm"
-          style={
-            landscape
-              ? { top: -4, left: 220, width: 40, height: 4 }
-              : { left: -4, top: 220, width: 4, height: 40 }
-          }
+          style={{ left: -4, top: 220, width: 4, height: 40 }}
         />
       </div>
       <div className="absolute bottom-6 text-[10px] tracking-widest uppercase text-zinc-500">
-        Desktop preview · {landscape ? "landscape" : "portrait"}
+        Desktop preview
       </div>
     </div>
   );

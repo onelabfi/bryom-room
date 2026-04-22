@@ -3,9 +3,10 @@ import { dimText, endScene, motionFromRegistry } from "../shared";
 
 /**
  * Trail Runner — Focus zone.
- * Reindeer auto-runs through 3 lanes. Swipe up/down to change lane.
- * Collect light orbs (green pulse), avoid dark shards (soft slowdown, no death).
- * 60s session. No score pressure — only "light collected" as gentle feedback.
+ * Portrait layout: reindeer runs forward at the bottom, world scrolls
+ * down past them. 3 columns (lanes). Swipe or tap left/right half to
+ * change lane. Collect light orbs, dodge dark shards (soft slowdown,
+ * no death). 60s session.
  */
 export default class TrailRunner extends Phaser.Scene {
   private player!: Phaser.GameObjects.Arc;
@@ -25,45 +26,42 @@ export default class TrailRunner extends Phaser.Scene {
 
   create() {
     const { width, height } = this.scale;
-    this.lanes = [height * 0.3, height * 0.5, height * 0.7];
+    // 3 vertical lanes (x positions)
+    this.lanes = [width * 0.25, width * 0.5, width * 0.75];
     const motion = motionFromRegistry(this);
     this.speed = 260 * motion;
 
     this.cameras.main.setBackgroundColor("#0b0f14");
 
-    // trail lines
+    // trail guide lines (vertical)
     for (let i = 0; i < 3; i++) {
       this.add
-        .line(0, this.lanes[i], 0, 0, width, 0, 0x1e2a38, 0.5)
-        .setOrigin(0, 0.5);
+        .line(this.lanes[i], 0, 0, 0, 0, height, 0x1e2a38, 0.5)
+        .setOrigin(0.5, 0);
     }
 
-    // player
-    this.player = this.add.circle(width * 0.18, this.lanes[this.laneIndex], 18, 0xc9a77a);
-    this.add.circle(width * 0.18 - 4, this.lanes[this.laneIndex] - 4, 2, 0x1a1a1a).setName("eye-l");
+    const playerY = height * 0.82;
+    this.player = this.add.circle(this.lanes[this.laneIndex], playerY, 18, 0xc9a77a);
     this.physics.add.existing(this.player);
     const body = this.player.body as Phaser.Physics.Arcade.Body;
-    body.setCircle(18);
-    body.setImmovable(true);
+    body.setCircle(18).setImmovable(true);
 
     this.orbs = this.add.group();
     this.shards = this.add.group();
 
-    // spawn loop
     this.time.addEvent({
       delay: 900,
       loop: true,
       callback: () => this.spawn(),
     });
 
-    // input: swipe or tap top/bottom half
+    // input: tap left/right half
     this.input.on("pointerdown", (p: Phaser.Input.Pointer) => {
-      if (p.y < height * 0.5) this.changeLane(-1);
+      if (p.x < width * 0.5) this.changeLane(-1);
       else this.changeLane(1);
     });
-
-    this.input.keyboard?.on("keydown-UP", () => this.changeLane(-1));
-    this.input.keyboard?.on("keydown-DOWN", () => this.changeLane(1));
+    this.input.keyboard?.on("keydown-LEFT", () => this.changeLane(-1));
+    this.input.keyboard?.on("keydown-RIGHT", () => this.changeLane(1));
 
     this.hud = dimText(this, width / 2, 22, "60s").setDepth(10);
 
@@ -76,54 +74,54 @@ export default class TrailRunner extends Phaser.Scene {
     this.laneIndex = next;
     this.tweens.add({
       targets: this.player,
-      y: this.lanes[this.laneIndex],
+      x: this.lanes[this.laneIndex],
       duration: 180,
       ease: "Sine.easeInOut",
     });
   }
 
   private spawn() {
-    const { width } = this.scale;
     const lane = Phaser.Math.Between(0, 2);
-    const y = this.lanes[lane];
+    const x = this.lanes[lane];
     const isOrb = Math.random() < 0.6;
     if (isOrb) {
-      const orb = this.add.circle(width + 30, y, 10, 0x7bd389);
+      const orb = this.add.circle(x, -30, 10, 0x7bd389);
       orb.setData("kind", "orb");
       this.orbs.add(orb);
     } else {
-      const shard = this.add.rectangle(width + 30, y, 18, 26, 0x3a2230);
+      const shard = this.add.rectangle(x, -30, 26, 18, 0x3a2230);
       shard.setData("kind", "shard");
       this.shards.add(shard);
     }
   }
 
   update(_t: number, dt: number) {
-    const dx = (this.speed * dt) / 1000;
+    const dy = (this.speed * dt) / 1000;
     this.elapsed += dt;
+    const { height } = this.scale;
 
     this.orbs.getChildren().forEach((obj) => {
       const g = obj as Phaser.GameObjects.Arc;
-      g.x -= dx;
+      g.y += dy;
       if (this.hit(g)) {
         this.collected += 1;
         this.flashPlayer(0x7bd389);
         g.destroy();
-      } else if (g.x < -40) g.destroy();
+      } else if (g.y > height + 40) g.destroy();
     });
 
     this.shards.getChildren().forEach((obj) => {
       const g = obj as Phaser.GameObjects.Rectangle;
-      g.x -= dx;
+      g.y += dy;
       if (this.hit(g)) {
         this.cameras.main.shake(120, 0.003);
         this.speed = Math.max(140, this.speed - 20);
         this.flashPlayer(0xe07a7a);
         g.destroy();
-      } else if (g.x < -40) g.destroy();
+      } else if (g.y > height + 40) g.destroy();
     });
 
-    // drift speed back up slowly
+    // drift back to baseline
     this.speed = Math.min(260, this.speed + dt * 0.01);
 
     const remaining = Math.max(0, Math.ceil((this.duration - this.elapsed) / 1000));

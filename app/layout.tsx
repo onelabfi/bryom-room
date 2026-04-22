@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import RotatePrompt from "@/components/room/RotatePrompt";
 import SensoryBoot from "@/components/room/SensoryBoot";
 import PhoneFrame from "@/components/room/PhoneFrame";
 
@@ -26,7 +25,6 @@ export default function RootLayout({
       <body className="w-full h-full overflow-hidden">
         <SensoryBoot />
         <PhoneFrame>{children}</PhoneFrame>
-        <RotatePrompt />
       </body>
     </html>
   );

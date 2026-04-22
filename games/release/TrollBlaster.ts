@@ -3,10 +3,10 @@ import { dimText, endScene } from "../shared";
 
 /**
  * Troll Blaster — Release zone.
- * Drag back the light orb from the reindeer's paws. Release to launch.
- * Hit dark trolls — they DISSOLVE into particles (not explode).
- * Mechanic-inspired, IP-safe (no bird types, no 3-star levels, no map).
- * 90s session, then auto de-escalation outro (handled by shell).
+ * Portrait layout: reindeer is a small stump at the bottom-center of the
+ * screen. Drag the light orb DOWN to aim, release to launch UP. Dark
+ * trolls sit in the upper half and DISSOLVE (not explode) on impact.
+ * 90s session, then shell-driven de-escalation outro.
  */
 export default class TrollBlaster extends Phaser.Scene {
   private anchor!: Phaser.Math.Vector2;
@@ -27,15 +27,15 @@ export default class TrollBlaster extends Phaser.Scene {
     const { width, height } = this.scale;
     this.cameras.main.setBackgroundColor("#0b0f14");
 
-    // reindeer "stump" left side
-    this.add.rectangle(width * 0.12, height * 0.78, 20, 80, 0x5a3f2a);
-    this.anchor = new Phaser.Math.Vector2(width * 0.12, height * 0.72);
+    // reindeer stump at bottom-center
+    this.add.rectangle(width * 0.5, height * 0.9, 80, 20, 0x5a3f2a);
+    this.anchor = new Phaser.Math.Vector2(width * 0.5, height * 0.82);
 
     this.spawnOrb();
     this.spawnTrolls();
 
     this.input.on("pointerdown", (p: Phaser.Input.Pointer) => {
-      if (Phaser.Math.Distance.Between(p.x, p.y, this.orb.x, this.orb.y) < 50) {
+      if (Phaser.Math.Distance.Between(p.x, p.y, this.orb.x, this.orb.y) < 60) {
         this.aiming = true;
       }
     });
@@ -55,7 +55,7 @@ export default class TrollBlaster extends Phaser.Scene {
       this.launch();
     });
 
-    this.hud = dimText(this, width / 2, 24, "Drag the orb back. Release to throw.");
+    this.hud = dimText(this, width / 2, 24, "Drag the orb down. Release to throw up.");
 
     this.time.delayedCall(this.duration, () => endScene(this, "finished"));
   }
@@ -78,7 +78,7 @@ export default class TrollBlaster extends Phaser.Scene {
     let px = this.orb.x, py = this.orb.y;
     this.trail.beginPath();
     this.trail.moveTo(px, py);
-    for (let t = 0.02; t < 1.1; t += 0.04) {
+    for (let t = 0.02; t < 1.4; t += 0.04) {
       const nx = this.orb.x + vx * t;
       const ny = this.orb.y + vy * t + 0.5 * 600 * t * t;
       this.trail.lineTo(nx, ny);
@@ -94,9 +94,6 @@ export default class TrollBlaster extends Phaser.Scene {
     const dy = this.anchor.y - this.orb.y;
     const body = this.orb.body as Phaser.Physics.Arcade.Body;
     body.setAllowGravity(true).setGravityY(600).setVelocity(dx * 4, dy * 4);
-    // Capture the current orb — if it gets destroyed early by going
-    // off-screen in update(), the fallback timer must NOT destroy the
-    // new orb that replaced it.
     const launched = this.orb;
     this.time.delayedCall(3200, () => {
       if (launched.active) {
@@ -112,8 +109,8 @@ export default class TrollBlaster extends Phaser.Scene {
     this.trolls = [];
     const count = Phaser.Math.Between(3, 5);
     for (let i = 0; i < count; i++) {
-      const x = Phaser.Math.Between(Math.floor(width * 0.5), Math.floor(width * 0.92));
-      const y = Phaser.Math.Between(Math.floor(height * 0.35), Math.floor(height * 0.8));
+      const x = Phaser.Math.Between(Math.floor(width * 0.12), Math.floor(width * 0.88));
+      const y = Phaser.Math.Between(Math.floor(height * 0.15), Math.floor(height * 0.55));
       const troll = this.add.circle(x, y, 22, 0x3a2a3a);
       troll.setStrokeStyle(2, 0x5c3d5c);
       this.trolls.push(troll);
@@ -123,7 +120,6 @@ export default class TrollBlaster extends Phaser.Scene {
   update(_t: number, dt: number) {
     this.elapsed += dt;
 
-    // collisions
     if (this.orb && this.orb.active) {
       for (let i = this.trolls.length - 1; i >= 0; i--) {
         const troll = this.trolls[i];
@@ -133,7 +129,12 @@ export default class TrollBlaster extends Phaser.Scene {
         }
       }
       const { width, height } = this.scale;
-      if (this.orb.x > width + 40 || this.orb.y > height + 40) {
+      if (
+        this.orb.x < -40 ||
+        this.orb.x > width + 40 ||
+        this.orb.y > height + 40 ||
+        this.orb.y < -40
+      ) {
         this.orb.destroy();
         this.spawnOrb();
       }
@@ -148,7 +149,6 @@ export default class TrollBlaster extends Phaser.Scene {
   }
 
   private dissolve(troll: Phaser.GameObjects.Arc) {
-    // soft particle dissolve — no bang, no shake
     this.dissolved += 1;
     const n = 8;
     for (let i = 0; i < n; i++) {

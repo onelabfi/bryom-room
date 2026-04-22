@@ -2,63 +2,67 @@
 
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Mascot from "./Mascot";
 import FeedbackButton from "./FeedbackButton";
 import { FEELINGS, ZONE_META } from "@/lib/state";
-import { track, now, type Feeling } from "@/lib/analytics";
+import { track, now, type Feeling, type Zone } from "@/lib/analytics";
 
 const STORAGE_KEY = "bryom-room-last-feeling";
 
-/**
- * Portrait-only entry screen. Ask how the user feels, then route to the
- * recommended zone. Game and zone views run landscape; this one stays
- * vertical because it's how people hold the phone when they open an app.
- */
 export default function FeelingSelector() {
   const router = useRouter();
   const [picked, setPicked] = useState<Feeling | null>(null);
+  const zonesRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     track({ type: "room_enter", ts: now() });
   }, []);
 
-  const handlePick = (feeling: Feeling) => {
+  const handleFeeling = (feeling: Feeling) => {
     const option = FEELINGS.find((f) => f.id === feeling);
     if (!option) return;
     setPicked(feeling);
     try {
       localStorage.setItem(STORAGE_KEY, feeling);
     } catch {}
-    const zone = option.recommendedZone;
     setTimeout(() => {
-      router.push(`/room/${zone}?from=feel:${feeling}`);
-    }, 450);
+      router.push(`/room/${option.recommendedZone}?from=feel:${feeling}`);
+    }, 420);
+  };
+
+  const handleZone = (z: Zone) => {
+    router.push(`/room/${z}?from=direct`);
+  };
+
+  const scrollToZones = () => {
+    zonesRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   return (
-    <div className="relative w-full h-full flex flex-col items-center px-5 pt-8 pb-6 gap-4 overflow-y-auto">
-      <div className="absolute top-2 left-1/2 -translate-x-1/2 text-[9px] uppercase tracking-[0.2em] text-[color:var(--fg-dim)]">
+    <div className="relative w-full h-full flex flex-col items-center px-4 pt-7 pb-6 gap-4 overflow-y-auto">
+      <div className="absolute top-1.5 left-1/2 -translate-x-1/2 text-[9px] uppercase tracking-[0.2em] text-[color:var(--fg-dim)]">
         Playtest build
       </div>
-      <div className="flex flex-col items-center gap-2 text-center">
-        <Mascot size={100} mood="idle" />
-        <h1 className="text-2xl font-medium leading-tight mt-1">
+
+      <div className="flex flex-col items-center gap-1.5 text-center">
+        <Mascot size={92} mood="idle" />
+        <h1 className="text-xl font-medium leading-tight mt-1">
           How are you feeling?
         </h1>
-        <p className="text-xs text-[color:var(--fg-dim)] max-w-[240px]">
+        <p className="text-[11px] text-[color:var(--fg-dim)] max-w-[260px]">
           Pick the closest one. I&apos;ll suggest a zone.
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-2.5 w-full max-w-sm mt-2">
+      <div className="grid grid-cols-2 gap-2 w-full">
         {FEELINGS.map((f) => {
           const isPicked = picked === f.id;
           const zone = ZONE_META[f.recommendedZone];
           return (
             <motion.button
               key={f.id}
-              onClick={() => handlePick(f.id)}
+              onClick={() => handleFeeling(f.id)}
               whileTap={{ scale: 0.96 }}
               animate={
                 isPicked ? { scale: 1.04, borderColor: zone.accent } : { scale: 1 }
@@ -73,7 +77,7 @@ export default function FeelingSelector() {
                 {f.hint}
               </div>
               <div
-                className="text-[9px] uppercase tracking-widest mt-1.5 opacity-80"
+                className="text-[9px] uppercase tracking-widest mt-1 opacity-80"
                 style={{ color: zone.accent as string }}
               >
                 → {zone.title}
@@ -84,11 +88,44 @@ export default function FeelingSelector() {
       </div>
 
       <button
-        onClick={() => router.push("/room/focus?from=direct")}
-        className="text-[11px] text-[color:var(--fg-dim)] underline underline-offset-4 mt-2"
+        onClick={scrollToZones}
+        className="text-[11px] text-[color:var(--fg-dim)] underline underline-offset-4 mt-1"
       >
-        Skip — let me pick a zone myself
+        Or pick a zone directly ↓
       </button>
+
+      <div
+        ref={zonesRef}
+        className="w-full flex flex-col gap-2 pt-2 border-t border-white/5 mt-2"
+      >
+        <div className="text-[10px] uppercase tracking-widest text-[color:var(--fg-dim)] text-center pt-1">
+          Zones
+        </div>
+        <div className="grid grid-cols-2 gap-2 w-full">
+          {(["focus", "calm", "fidget", "release"] as Zone[]).map((z) => {
+            const m = ZONE_META[z];
+            return (
+              <motion.button
+                key={z}
+                whileTap={{ scale: 0.96 }}
+                onClick={() => handleZone(z)}
+                className="br-card p-3 text-left active:bg-white/10"
+                style={{ borderLeft: `3px solid ${m.accent as string}` }}
+              >
+                <div
+                  className="text-sm font-medium"
+                  style={{ color: m.accent as string }}
+                >
+                  {m.title}
+                </div>
+                <div className="text-[11px] text-[color:var(--fg-dim)] mt-0.5 leading-snug">
+                  {m.blurb}
+                </div>
+              </motion.button>
+            );
+          })}
+        </div>
+      </div>
 
       <FeedbackButton context={{ screen: "entry" }} />
     </div>
